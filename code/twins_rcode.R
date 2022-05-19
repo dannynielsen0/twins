@@ -9,9 +9,12 @@ library(phyloseq)
 library(vegan)
 library(data.table)
 library(ggplot2)
+library(gridExtra)
+library(Biostrings)
 
 physeq <- qza_to_phyloseq(features="deblur_table_final.qza", tree = "asvs-tree.qza",
                           taxonomy = "classification.qza", metadata = "metadata2.txt")
+
 
 #convert staph culture to factor
 physeq@sam_data$Staph.culture <- as.factor(physeq@sam_data$Staph.culture)
@@ -42,10 +45,10 @@ physeq_RRA <- transform_sample_counts(physeq, function(x) x/sum(x)) #converts to
 
 #create ordinations
 PCoA_bray <- ordinate(physeq_rare, method = "PCoA", distance = "bray", scale=TRUE, center=TRUE) #ordination using bray-curtis distances
-PCoA_unifrac <- ordinate(physeq_rare, method = "PCoA", distance = "wunifrac") #ordination using bray-curtis distances
+PCoA_unifrac <- ordinate(physeq_rare, method = "PCoA", distance = "unifrac") #ordination using bray-curtis distances
 
 #plot ordinations
-PCoA_plot1 <- plot_ordination(physeq_rare, PCoA_unifrac, color = "Location", shape="Staph.culture", axes = 1:2)
+PCoA_plot1 <- plot_ordination(physeq_rare, PCoA_bray, color = "Location", shape="Staph.culture", axes = 1:2)
 
 PCoA_plot1 <- PCoA_plot1 + geom_point(size = 3) + 
   scale_color_manual(values= c("forestgreen", "maroon", "blue")) +
@@ -59,17 +62,32 @@ PCoA_plot1 <- PCoA_plot1 + geom_point(size = 3) +
 
 PCoA_plot1
 
+ggsave(plot=PCoA_plot1, "../figures/bray_pcoa.pdf", width = 10, height =10 , device='pdf', dpi=500)
+
+
 
 ###PERMANOVA
 #create metadata for permanova
-perm_meta <- as(physeq_RRA@sam_data, "data.frame")
+perm_meta <- as(physeq_rare@sam_data, "data.frame")
 
 #make bray distance matrices for 16S composition
-perm_dist_bray <- phyloseq::distance(physeq_RRA, method="bray", scale=TRUE, center=TRUE)
+perm_dist_bray <- phyloseq::distance(physeq_rare, method="bray", scale=TRUE, center=TRUE)
 perm_dist_unifrac <- phyloseq::distance(physeq_RRA, method="wunifrac")
 
 #run adonis for PERMANOVA
-bray_perm <- adonis(data=perm_meta, perm_dist_unifrac~Location + Staph.culture)
+bray_perm <- adonis(data=perm_meta, perm_dist_bray~Location + Staph.culture)
 
 
+
+###Picrust 
+
+#Enzyme classification numbers (EC)
+EC_crust <- as.data.frame(read.table("../picrust/picrust2_out_pipeline/pathways_out/path_abun_unstrat_descrip.tsv", header=TRUE, sep="\t", stringsAsFactors = FALSE))
+crust_descript <- t(EC_crust[,2:444])
+
+#make first line the column header
+colnames(crust_descript) <- crust_descript[1,]
+crust_descript <- crust_descript[-1, ] 
+
+physeq@sam_data
 
