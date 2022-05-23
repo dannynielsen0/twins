@@ -26,20 +26,27 @@ physeq@sam_data$Staph.culture <- as.factor(physeq@sam_data$Staph.culture)
 sdt = data.table(as(sample_data(physeq), "data.frame"),
                  TotalReads = sample_sums(physeq), keep.rownames = TRUE)
 summary(sdt)
+summary(sample_sums(physeq_rare))
 
 
 
 ##Rarefy
 set.seed(666)
 physeq_rare <- rarefy_even_depth(physeq,sample.size = min(sample_sums(physeq)))
+summary(sample_sums(physeq_rare)) #using above rarefy command, we have this resulting: 2527
+
 
 
 ###Alpha diversity by location and between staph carriage
-plot_richness(physeq, x="Location", measures="Chao1") + facet_grid(~Staph.culture)
+alpha_div_plot_shannon <- plot_richness(physeq_rare, x="Location", measures="Shannon") + facet_grid(~Staph.culture)
+alpha_div_plot_chao1 <- plot_richness(physeq_rare, x="Location", measures= "Chao1") + facet_grid(~Staph.culture)
+
+ggsave(plot=alpha_div_plot_shannon, "../figures/shannon_div.pdf", width = 10, height =10 , device='pdf', dpi=500)
+ggsave(plot=alpha_div_plot_chao1, "../figures/chao1_div.pdf", width = 10, height =10 , device='pdf', dpi=500)
 
 
 #beta diversity
-#convert to RRA
+#convert to RRA, if wanted
 
 physeq_RRA <- transform_sample_counts(physeq, function(x) x/sum(x)) #converts to relative abundance
 
@@ -62,7 +69,7 @@ PCoA_plot1 <- PCoA_plot1 + geom_point(size = 3) +
 
 PCoA_plot1
 
-ggsave(plot=PCoA_plot1, "../figures/bray_pcoa.pdf", width = 10, height =10 , device='pdf', dpi=500)
+ggsave(plot=PCoA_plot1, "../figures/U_Unifrac_pcoa.pdf", width = 10, height =10 , device='pdf', dpi=500)
 
 
 
@@ -83,11 +90,13 @@ bray_perm <- adonis(data=perm_meta, perm_dist_bray~Location + Staph.culture)
 
 #Enzyme classification numbers (EC)
 EC_crust <- as.data.frame(read.table("../picrust/picrust2_out_pipeline/pathways_out/path_abun_unstrat_descrip.tsv", header=TRUE, sep="\t", stringsAsFactors = FALSE))
+EC_crust <- read.table("../picrust/picrust2_out_pipeline/pathways_out/path_abun_unstrat_descrip.tsv", header=TRUE, sep="\t", stringsAsFactors = FALSE)
+
 crust_descript <- t(EC_crust[,2:444])
 
 #make first line the column header
 colnames(crust_descript) <- crust_descript[1,]
 crust_descript <- crust_descript[-1, ] 
 
-physeq@sam_data
-
+#cbind the picrust data to the physeq metadata
+crust_dat <- cbind(physeq@sam_data, crust_desc
