@@ -24,10 +24,21 @@ picrust2_pipeline.py -s dna-sequences.fasta -i twins_otus.tsv -o picrust2_out_pi
 
 
 
-###add functional descriptions
+###add functional descriptions for EC 
 
 add_descriptions.py -i EC_metagenome_out/pred_metagenome_unstrat.tsv.gz -m EC \
                     -o EC_metagenome_out/pred_metagenome_unstrat_descrip.tsv.gz
 
 add_descriptions.py -i pathways_out/path_abun_unstrat.tsv.gz -m METACYC \
                     -o pathways_out/path_abun_unstrat_descrip.tsv.gz
+                    
+###add functional descriptions for KO pathways
+
+add_descriptions.py -i KO_predicted.tsv.gz -m KO \
+                    -o KO_metagenome_out/pred_KO_unstrat_descrip.tsv.gz
+
+add_descriptions.py -i pathways_out/path_abun_unstrat.tsv.gz -m METACYC \
+                    -o pathways_out/KO_path_abun_unstrat_descrip.tsv.gz
+
+add_descriptions.py -i KO_metagenome_out/pred_metagenome_unstrat.tsv.gz -m KO \
+                    -o KO_metagenome_out/pred_metagenome_unstrat_descrip.tsv.gz

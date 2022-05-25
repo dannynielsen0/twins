@@ -11,6 +11,7 @@ library(data.table)
 library(ggplot2)
 library(gridExtra)
 library(Biostrings)
+library(factoextra)
 
 physeq <- qza_to_phyloseq(features="deblur_table_final.qza", tree = "asvs-tree.qza",
                           taxonomy = "classification.qza", metadata = "metadata2.txt")
@@ -88,18 +89,16 @@ bray_perm <- adonis(data=perm_meta, perm_dist_bray~Location + Staph.culture)
 
 ###Picrust 
 
-#Enzyme classification numbers (EC)
-#EC_crust <- as.data.frame(read.table("../picrust/picrust2_out_pipeline/pathways_out/path_abun_unstrat_descrip.tsv", header=TRUE, sep="\t", stringsAsFactors = FALSE, fill=FALSE))
+#Use KO pathways
 #change the file to .csv and read in this way, the other format was creating some issues with weird downstream problems 
 #probably due to weird characters throwing off the df
 
-EC_crust <- read.csv("../picrust/picrust2_out_pipeline/pathways_out/paths.csv", header=TRUE, stringsAsFactors = FALSE)
+KO_crust <- read.csv("../picrust/picrust2_out_pipeline/KO_metagenome_out/pred_metagenome_unstrat_descrip.csv", header=TRUE, stringsAsFactors = FALSE)
 
-EC_crust$path_descript <- paste(EC_crust$pathway, EC_crust$description, sep="_")
 
-#move new column to first
-EC_crust<-EC_crust[,c(445, 3:444)]
-crust_descript <- t(EC_crust)
+#set up df
+KO_crust <- KO_crust[,c(2:444)] #remove first column
+crust_descript <- t(KO_crust) #transform so that samples are rows
 
 #make first line the column header
 colnames(crust_descript) <- crust_descript[1,]
@@ -107,12 +106,12 @@ crust_descript <- crust_descript[-1, ]
 
 #cbind the picrust data to the physeq metadata
 crust_dat <- cbind(physeq@sam_data, crust_descript)
-crust_dat[,5:379] <- as.numeric(unlist(crust_dat[,5:379])) #make path abundances numeric
+crust_dat[,5:6303] <- as.numeric(unlist(crust_dat[,5:6303])) #make path abundances numeric
 
 
 #plot PCA of functional pathways
 
-pca <- prcomp(sqrt(crust_dat[,5:379]), center=T, scale=T)
+pca <- prcomp(sqrt(crust_dat[,5:6303]), center=T, scale=T)
 
 # visualize
 biplot <- fviz_pca_biplot(pca, repel = TRUE, axes = c(1,2),
@@ -127,12 +126,12 @@ biplot <- fviz_pca_biplot(pca, repel = TRUE, axes = c(1,2),
                           ind.shape = crust_dat$Location,
                           ind.fill = crust_dat$Staph.culture,
                           invisible = c( "quali"), #remove enlarged symbol for group mean
-                          title = "Picrust Pathways")
+                          title = "Picrust KO Pathways")
 biplot
 
 #PERMANOVA with adonis
 
-dist <- vegdist(crust_dat[,5:379], method="bray")
+dist <- vegdist(crust_dat[,5:6303], method="bray")
 vegan::adonis(dist ~ Location + Staph.culture, data=crust_dat)
 
 # Permutation: free
@@ -141,10 +140,10 @@ vegan::adonis(dist ~ Location + Staph.culture, data=crust_dat)
 # Terms added sequentially (first to last)
 # 
 # Df SumsOfSqs MeanSqs F.Model      R2 Pr(>F)    
-# Location        2     6.822  3.4108  34.567 0.13543  0.001 ***
-#   Staph.culture   1     0.331  0.3313   3.358 0.00658  0.022 *  
-#   Residuals     438    43.219  0.0987         0.85800           
-# Total         441    50.372                 1.00000           
+# Location        2     8.856  4.4278  38.913 0.14997  0.001 ***
+#   Staph.culture   1     0.356  0.3557   3.126 0.00602  0.017 *  
+#   Residuals     438    49.839  0.1138         0.84401           
+# Total         441    59.050                 1.00000           
 # ---
 #   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
