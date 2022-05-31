@@ -67,7 +67,9 @@ categorize_by_function_l3 <- function(in_ko, kegg_brite_mapping) {
 KEGG_cat_two <- categorize_by_function_l3(test_ko, kegg_brite_map)
 cat_two_sorted <- KEGG_cat_two[rownames(KEGG_cat_two), ]
 
-write.csv(cat_two_sorted, "KEGG_cat2_data.csv")
+saveRDS(cat_two_sorted, "cat2_sorted.rds")
 
+write.csv(cat_two_sorted, "KEGG_cat2_data.csv")
+write.table(cat_two_sorted,"KEGG_cat2.tsv", sep="\t", row.names = TRUE, col.names = FALSE)
 
 
