@@ -9,6 +9,9 @@ setwd("~/Desktop/twins/data")
 
 library(phyloseq)
 library(lefser)
+zeller14@assays@data$exprs
+
+
 
 #load phyloseq object
 
