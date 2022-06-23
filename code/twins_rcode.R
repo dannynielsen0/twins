@@ -42,7 +42,7 @@ physeq <- readRDS("physeq_twins.rds")
 
 
 #rename staph to Staph positive and Staph negative
-levels(physeq@sam_data$Staph.culture) <- as.factor(c("staph_negative", "staph_positive"))
+levels(physeq@sam_data$Staph.culture) <- as.factor(c("staph-negative", "staph-positive"))
 #change other variable to factor/character
 physeq@sam_data$Location <- as.factor(physeq@sam_data$Location)
 physeq@sam_data$Description <- as.character(physeq@sam_data$Description)
@@ -69,6 +69,8 @@ set.seed(666)
 physeq_rare <- rarefy_even_depth(physeq,sample.size = min(sample_sums(physeq)))
 summary(sample_sums(physeq_rare)) #using above rarefy command, we have this resulting: 2527
 
+#save rarefied object
+saveRDS(physeq_rare, "physeq_rare_twins.rds")
 
 
 ###Alpha diversity by location and between staph carriage (*** 0.001, ** 0.01, * 0.05)
@@ -102,7 +104,6 @@ ggsave(plot=alpha_div_plot_simpson, "../figures/simpson_div.pdf", width = 10, he
 
 #beta diversity
 #convert to RRA, if wanted
-
 physeq_RRA <- transform_sample_counts(physeq, function(x) x/sum(x)) #converts to relative abundance
 
 #create ordinations
