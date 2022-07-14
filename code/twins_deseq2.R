@@ -19,15 +19,15 @@ physeq <- readRDS("physeq_twins.rds")
 
 
 #make a taxonomic rank that includes both family and genus - this will help when visualizing later
-Fam_Genus <- paste(tax_table(physeq)[ ,"Family"],tax_table(physeq)[ ,"Genus"], sep = "_")
+Fam_Genus <- paste(tax_table(physeq)[ ,"Family"],tax_table(physeq)[ ,"Genus"], tax_table(physeq)[ ,"Species"], sep = "_")
 tax_table(physeq) <- cbind(tax_table(physeq), Fam_Genus)
 
 
 #subset to only throat
-physeq_throat <- subset_samples(physeq, physeq@sam_data$Location != "Hand")
+physeq_throat <- subset_samples(physeq, physeq@sam_data$Staph.culture == "0")
 
 #set no staph as reference level for diet treatment
-physeq_throat@sam_data$Staph.culture = relevel(physeq_throat@sam_data$Location, "Throat")
+physeq_throat@sam_data$Location = relevel(physeq_throat@sam_data$Location, "Nose")
 
 #create the deseq object and run the function  
 diff_abund = phyloseq_to_deseq2(physeq_throat, ~Location)
@@ -66,14 +66,22 @@ sigtab$Fam_Genus = factor(as.character(sigtab$Fam_Genus), levels=names(x))
 #positive values mean greater abundance in staph positive, negative values mean greater in staph negative
 
 diff_abund_plot <- ggplot(sigtab, aes(x=Fam_Genus, y=log2FoldChange, color=Phylum)) + geom_point(size=6) + 
-  theme(axis.text.x = element_text(angle = -90, hjust = 0, vjust=0.5)) + coord_flip()
+  theme(axis.text.x = element_text(angle = -90, hjust = 0, vjust=0.5)) + coord_flip() +
+  geom_hline(yintercept = 0, linetype="dashed", 
+             color = "black", size=1.0) + 
+  annotate("text", x = 70, y=-15, label = "Nose",size = unit(12, "pt")) +
+  annotate("text", x = 35, y=15, label = "Throat",size = unit(12, "pt")) +
+  ggtitle("Staph Negative") + theme(plot.title = element_text(hjust = 0.5)) +
+  theme(axis.text=element_text(size=14),
+        axis.title=element_text(size=14))
 
 print(diff_abund_plot)
 
+ggsave(plot=diff_abund_plot, "../figures/StaphNeg_TvN.pdf", width = 12, height =20 , device='pdf', dpi=500)
+write.table(sigtab, "../figures/StaphNeg_TvN.txt", sep = "\t")
 
 
-
-clostridium <- subset_taxa(physeq, Genus=="Bergeyella")
+clostridium <- subset_taxa(physeq_throat, Genus=="Dolosigranulum")
 
 plot_bar(clostridium) + facet_wrap(~Location)
 
