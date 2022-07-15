@@ -19,18 +19,23 @@ physeq <- readRDS("physeq_twins.rds")
 
 
 #make a taxonomic rank that includes both family and genus - this will help when visualizing later
-Fam_Genus <- paste(tax_table(physeq)[ ,"Family"],tax_table(physeq)[ ,"Genus"], tax_table(physeq)[ ,"Species"], sep = "_")
+Fam_Genus_species <- paste(tax_table(physeq)[ ,"Family"],tax_table(physeq)[ ,"Genus"], tax_table(physeq)[ ,"Species"], sep = "_")
+Fam_Genus <- paste(tax_table(physeq)[ ,"Family"],tax_table(physeq)[ ,"Genus"], sep = "_")
 tax_table(physeq) <- cbind(tax_table(physeq), Fam_Genus)
-
+tax_table(physeq) <- cbind(tax_table(physeq), Fam_Genus_species)
 
 #subset to only throat
 physeq_throat <- subset_samples(physeq, physeq@sam_data$Staph.culture == "0")
 
+
+
 #set no staph as reference level for diet treatment
 physeq_throat@sam_data$Location = relevel(physeq_throat@sam_data$Location, "Nose")
+physeq_throat@sam_data$Staph.culture = relevel(physeq_throat@sam_data$Staph.culture, "0")
+
 
 #create the deseq object and run the function  
-diff_abund = phyloseq_to_deseq2(physeq_throat, ~Location)
+diff_abund = phyloseq_to_deseq2(physeq_throat, ~ Location)
 diff_abund = DESeq(diff_abund, test="Wald", fitType ="parametric", sfType = "poscounts") #the poscounts sfType flag can be used if many 0s in the data
 
 #check the reference levels
@@ -61,7 +66,6 @@ x = sort(x, TRUE)
 sigtab$Fam_Genus = factor(as.character(sigtab$Fam_Genus), levels=names(x))
 
 
-
 ### We can plot the results  
 #positive values mean greater abundance in staph positive, negative values mean greater in staph negative
 
@@ -69,19 +73,19 @@ diff_abund_plot <- ggplot(sigtab, aes(x=Fam_Genus, y=log2FoldChange, color=Phylu
   theme(axis.text.x = element_text(angle = -90, hjust = 0, vjust=0.5)) + coord_flip() +
   geom_hline(yintercept = 0, linetype="dashed", 
              color = "black", size=1.0) + 
-  annotate("text", x = 70, y=-15, label = "Nose",size = unit(12, "pt")) +
-  annotate("text", x = 35, y=15, label = "Throat",size = unit(12, "pt")) +
+  annotate("text", x = 20, y=-10, label = "Nose",size = unit(12, "pt")) +
+  annotate("text", x = 35, y=10, label = "Throat",size = unit(12, "pt")) +
   ggtitle("Staph Negative") + theme(plot.title = element_text(hjust = 0.5)) +
   theme(axis.text=element_text(size=14),
         axis.title=element_text(size=14))
 
 print(diff_abund_plot)
 
-ggsave(plot=diff_abund_plot, "../figures/StaphNeg_TvN.pdf", width = 12, height =20 , device='pdf', dpi=500)
+ggsave(plot=diff_abund_plot, "../figures/StaphNeg_TvN.pdf", width = 12, height =10 , device='pdf', dpi=500)
 write.table(sigtab, "../figures/StaphNeg_TvN.txt", sep = "\t")
 
 
-clostridium <- subset_taxa(physeq_throat, Genus=="Dolosigranulum")
+clostridium <- subset_taxa(physeq_throat, Genus=="Megasphaera")
 
 plot_bar(clostridium) + facet_wrap(~Location)
 
