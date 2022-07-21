@@ -9,7 +9,10 @@ setwd("~/Desktop/twins/data")
 
 library(phyloseq)
 library(lefser)
-zeller14@assays@data$exprs
+library(vegan)
+
+#load example data
+zeller_data <- zeller14@assays@data
 
 
 
@@ -43,6 +46,28 @@ crust_descript <- crust_descript[-1, ] #only for csv
 #cbind the picrust data to the physeq metadata
 crust_dat <- cbind(physeq@sam_data, crust_descript)
 crust_dat[,5:43] <- as.numeric(unlist(crust_dat[,5:43])) #make path abundances numeric
+
+#create dataset for online galaxy LEFSE analysis
+crust_dat$sample <- row.names(crust_dat)
+
+#subset hand out
+crust_dat <- subset(crust_dat, crust_dat$Location != "Hand")
+#change staph to positive and negative
+levels(crust_dat$Staph.culture) <- as.factor(c("negative", "positive"))
+crust_dat$Location <- as.factor(crust_dat$Location)
+
+#convert to percentage
+crust_dat[,5:43] <- crust_dat[,5:43]/rowSums(crust_dat[,5:43])
+crust_dat$sample <- as.factor(crust_dat$sample)
+
+ggplot(data=crust_dat, aes(x=Staph.culture, y=crust_dat$Replication_and_Repair)) + geom_boxplot() + 
+  stat_summary(fun = mean)
+
+#make df
+crust_dat_lefse <- data.frame(crust_dat[,c(1,44,5:43)])
+row.names(crust_dat_lefse) <- NULL
+
+write.table(crust_dat_lefse, "../data/crust_lefse.tsv", sep="\t", row.names = FALSE)
 
 
 #plot PCA of functional pathways
@@ -91,10 +116,11 @@ vegan::adonis2(dist ~ Location + Staph.culture, data=crust_dat)
 #only 2 contrasts at a time,
 
 #for some reason, I can only get it to run if I remove nose here
-throat_dat <- subset(crust_dat, Location != "Nose")
+
+throat_dat <- crust_dat
 
 #look at table for # of samples fitting each Staph condition in the throat, nose, hand
-table(throat_dat$Location, throat_dat$Staph.culture)
+table(crust_dat$Location,crust_dat$Staph.culture)
 
 
 #set up data for the summarized experiment
@@ -106,9 +132,13 @@ throat_colData <- throat_dat[,1:4]
 throat_exp <- SummarizedExperiment(assays=list(counts=t(throat_counts)),
                                    colData=throat_colData)
 
+#remove hand
+
+throat_exp <- throat_exp[,throat_exp$Location!="Nose"]
+table(throat_exp$Location,throat_exp$Staph.culture)
+
 #run lefser for throat data
 throat_res <- lefser(throat_exp, groupCol = "Staph.culture")
-
 
 #plot results
 throat_plot <- lefserPlot(throat_res)
