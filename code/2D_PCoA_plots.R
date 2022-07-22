@@ -2,6 +2,7 @@
 
 library(phyloseq)
 library(ggplot2)
+library(ggarrange)
 
 rm(list=ls())
 setwd("~/Desktop/twins/data")
@@ -18,19 +19,18 @@ PCoA_wunifrac <- ordinate(physeq_rare, method = "PCoA", distance = "wunifrac") #
 
 #build plots by replacing the desired ordination (From last step) into the below plotting code
 
-PCoA_plot <- plot_ordination(physeq_rare, PCoA_wunifrac, shape= "Staph.culture", color = "Location", axes = c(2,3))
+PCoA_plot <- plot_ordination(physeq_rare, PCoA_bray, shape= "Staph.culture", color = "Location", axes = c(1,2))
 
 plot <- PCoA_plot + geom_point(size = 5) +
   scale_color_manual(values= c("forestgreen", "maroon", "blue")) +
-  scale_shape_manual(values=c(1,16)) + theme_bw() + ggtitle("Weighted unifrac") +
+  scale_shape_manual(values=c(1,16)) + theme_bw() + ggtitle("Bray-Curtis") +
   theme(plot.title = element_text(hjust = 0.5)) +
-  theme(axis.text=element_text(size=14),
-          axis.title=element_text(size=14))
+  theme(text=element_text(size=12,  family="sans"))
+  
 
-print(plot)
+plot
 
-
-ggsave(plot=plot, "../figures/Wunifrac_2_3.pdf", width = 12, height =10 , device='pdf', dpi=500)
+ggsave(plot=plot, "../figures/bray_1_2.jpg", width = 7, height =5 , device='jpg', dpi=600)
 
 
 
