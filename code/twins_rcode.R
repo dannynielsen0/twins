@@ -39,6 +39,12 @@ physeq <- qza_to_phyloseq(features="deblur_table_final.qza", tree = "asvs-tree.q
 saveRDS(physeq, "physeq_twins.rds")
 physeq <- readRDS("physeq_twins.rds")
 
+#number of OTUs in final 16S dataset, and before rarefying
+physeq #1351 total OTUs
+#total number of reads in this dataset
+sum(sample_sums(physeq@otu_table)) #4,680,299
+
+
 
 
 #rename staph to Staph positive and Staph negative

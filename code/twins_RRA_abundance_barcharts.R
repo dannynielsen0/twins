@@ -1,13 +1,20 @@
 ##RRA barchart plotting for Twins
 
-library(phyloseq)
-library(RColorBrewer)
-
 rm(list=ls())
 setwd("~/Desktop/twins/data")
 
+library(phyloseq)
+library(RColorBrewer)
+
+
 #read in rarefied phyloseq object
 physeq1 <- readRDS("physeq_rare_twins.rds")
+
+#number of OTUs after rarefying
+physeq1 #1347
+#after rarefying, # of reads
+sum(sample_sums(physeq1@otu_table))
+
 
 physeq1@sam_data$location_staph <- paste(physeq1@sam_data$Location, physeq1@sam_data$Staph.culture, sep="_")
 
