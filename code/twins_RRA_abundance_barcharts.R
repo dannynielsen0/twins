@@ -1,6 +1,7 @@
 ##RRA barchart plotting for Twins
 
 library(phyloseq)
+library(RColorBrewer)
 
 rm(list=ls())
 setwd("~/Desktop/twins/data")
@@ -36,10 +37,13 @@ mycolors <- colorRampPalette(brewer.pal(8, "Paired"))(length(unique(y4$Phylum)))
 p <- ggplot(data=y4, aes(x=col2, y=Abundance, fill=Phylum, Phylum =Phylum)) +
   geom_bar(aes(), stat="identity", position="stack") + scale_fill_manual(values=mycolors) +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_blank(), axis.line = element_line(colour = "black")) +
-  theme(legend.position="bottom", legend.title=element_text(size=10), legend.text=element_text(size=10)) + guides(fill=guide_legend(nrow=5)) + 
+  theme(legend.position="bottom", legend.title=element_text(size=12), legend.text=element_text(size=12)) + guides(fill=guide_legend(nrow=5)) + 
   scale_x_discrete(limits=rev(levels(as.factor(y4$col2)))) + facet_wrap(~col1) +
   guides(fill = guide_legend(reverse = TRUE)) +
-  ylab("16S relative read abundance") + xlab("")
+  ylab("16S relative read abundance") + xlab("") +
+  theme(strip.text = element_text(size=12, family = "sans")) +
+  theme(text=element_text(size=12,family="sans"))
+
 p
 
 

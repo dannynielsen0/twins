@@ -10,6 +10,10 @@ setwd("~/Desktop/twins/data")
 #read in rarefied phyloseq object
 physeq_rare <- readRDS("physeq_rare_twins.rds")
 
+physeq_rare <- readRDS("physeq_twins.rds")
+physeq_rare <- transform_sample_counts(physeq_rare, function(x) x/sum(x)) #get abundance in %
+
+
 
 #create ordinations for plotting below
 PCoA_bray <- ordinate(physeq_rare, method = "PCoA", distance = "bray", scale=TRUE, center=TRUE) #ordination using bray-curtis distances

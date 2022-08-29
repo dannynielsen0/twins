@@ -72,34 +72,92 @@ summary(sample_sums(physeq_rare)) #using above rarefy command, we have this resu
 #save rarefied object
 saveRDS(physeq_rare, "physeq_rare_twins.rds")
 
+#For alpha diversity plotting, make location_staph variable
+physeq_rare@sam_data$loc_staph <- as.factor(paste(physeq_rare@sam_data$Location, physeq_rare@sam_data$Staph.culture, sep = "_"))
 
 ###Alpha diversity by location and between staph carriage (*** 0.001, ** 0.01, * 0.05)
 
+div_df <- data.frame(physeq_rare@sam_data)
+
+my_comparisons <- list(c("Hand_staph-negative","Nose_staph-negative"),
+                        c("Hand_staph-negative","Nose_staph-positive"),
+                        c("Hand_staph-negative","Throat_staph-negative"),
+                        c("Hand_staph-negative","Throat_staph-positive"),
+                       c("Hand_staph-positive","Nose_staph-negative"),
+                       c("Hand_staph-positive","Nose_staph-positive"),
+                       c("Nose_staph-negative","Throat_staph-negative"),
+                       c("Nose_staph-negative","Throat_staph-positive"),
+                       c("Nose_staph-positive","Throat_staph-negative"),
+                       c("Nose_staph-positive","Throat_staph-positive"))
+                       
+                       
 #shannon diversity
-alpha_div_plot_shannon <- plot_richness(physeq_rare, x="Location", measures="Shannon") + geom_boxplot() + 
-  facet_grid(~Staph.culture) + theme_bw() + ylab("Shannon Diversity") +
-  geom_signif(test="wilcox.test",  map_signif_level = TRUE,
-              comparisons = combn(levels(physeq_rare@sam_data$Location),2, simplify = F)[-2],
-              step_increase = 0.2)
+alpha_div_plot_shannon <- plot_richness(physeq_rare, x="loc_staph", measures="Shannon") + geom_boxplot() + 
+  theme_bw() + ylab("Shannon Diversity") + xlab("") +
+  stat_compare_means(comparisons = my_comparisons,
+                     label="p.signif", method="wilcox.test", hide.ns = TRUE, vjust = 0.5,
+                     label.y = c(3.9,4.1,4.3,4.5,4.7,4.9,5.1,5.3,5.5,5.7)) +
+  #stat_compare_means(comparisons = combn(levels(physeq_rare@sam_data$loc_staph),2, simplify = F)[-15],
+                    #label="p.signif", method="wilcox.test", hide.ns = TRUE) +
+  scale_y_continuous(breaks=seq(1,4,by=1)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme(strip.text = element_text(size=12, family = "sans")) +
+  theme(text=element_text(size=12,family="sans"))
+
+
+my_comparisons_chao1 <- list(c("Hand_staph-negative","Nose_staph-negative"),
+                       c("Hand_staph-negative","Nose_staph-positive"),
+                       c("Hand_staph-negative","Throat_staph-negative"),
+                       c("Hand_staph-negative","Throat_staph-positive"),
+                       c("Hand_staph-positive","Nose_staph-negative"),
+                       c("Hand_staph-positive","Nose_staph-positive"),
+                       c("Hand_staph-positive","Throat_staph-negative"),
+                       c("Hand_staph-positive","Throat_staph-positive"),
+                       c("Nose_staph-negative","Throat_staph-negative"),
+                       c("Nose_staph-negative","Throat_staph-positive"),
+                       c("Nose_staph-positive","Throat_staph-negative"),
+                       c("Nose_staph-positive","Throat_staph-positive"),
+                       c("Throat_staph-negative","Throat_staph-positive"))
+
 
 #Chao1 diversity
-alpha_div_plot_chao1 <- plot_richness(physeq_rare, x="Location", measures="Chao1") + geom_boxplot() + 
-  facet_grid(~Staph.culture) + theme_bw() + ylab("Chao1 Diversity") +
-  geom_signif(test="wilcox.test",  map_signif_level = TRUE,
-              comparisons = combn(levels(physeq_rare@sam_data$Location),2, simplify = F)[-2],
-              step_increase = 0.2)
+alpha_div_plot_chao1 <- plot_richness(physeq_rare, x="loc_staph", measures="Chao1") + geom_boxplot() + 
+  theme_bw() + ylab("Chao1 Diversity") + xlab("") +
+  stat_compare_means(comparisons = my_comparisons_chao1,
+                     label="p.signif", method="wilcox.test", hide.ns = TRUE, vjust = 0.5,
+                     label.y = c(275,295,315,335,355,375,395,415,435,455,475, 495, 515)) +
+  scale_y_continuous(breaks=seq(0,300,by=100)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme(strip.text = element_text(size=12, family = "sans")) +
+  theme(text=element_text(size=12,family="sans"))
+
+
+my_comparisons_simpson <- list(c("Hand_staph-negative","Nose_staph-negative"),
+                             c("Hand_staph-negative","Nose_staph-positive"),
+                             c("Hand_staph-positive","Nose_staph-negative"),
+                             c("Hand_staph-positive","Nose_staph-positive"),
+                             c("Nose_staph-negative","Throat_staph-negative"),
+                             c("Nose_staph-negative","Throat_staph-positive"),
+                             c("Nose_staph-positive","Throat_staph-negative"),
+                             c("Nose_staph-positive","Throat_staph-positive"))
+
+
 
 #Simpson Diversity
-alpha_div_plot_simpson <- plot_richness(physeq_rare, x="Location", measures="Simpson") + geom_boxplot() + 
-  facet_grid(~Staph.culture) + theme_bw() + ylab("Simpson Diversity") +
-  geom_signif(test="wilcox.test",  map_signif_level = TRUE,
-              comparisons = combn(levels(physeq_rare@sam_data$Location),2, simplify = F)[-2],
-              step_increase = 0.2)
+alpha_div_plot_simpson <- plot_richness(physeq_rare, x="loc_staph", measures="Simpson") + geom_boxplot() + 
+  theme_bw() + ylab("Simpson Diversity") + xlab("") +
+  stat_compare_means(comparisons = my_comparisons_simpson,
+                     label="p.signif", method="wilcox.test", hide.ns = TRUE, vjust = 0.5,
+                     label.y = c(1,1.1,1.2,1.3,1.4,1.5,1.6,1.7)) +
+  scale_y_continuous(breaks=seq(0,1.5,by=.5)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme(strip.text = element_text(size=12, family = "sans")) +
+  theme(text=element_text(size=12,family="sans"))
+  
 
-
-ggsave(plot=alpha_div_plot_shannon, "../figures/shannon_div.pdf", width = 10, height =10 , device='pdf', dpi=500)
-ggsave(plot=alpha_div_plot_chao1, "../figures/chao1_div.pdf", width = 10, height =10 , device='pdf', dpi=500)
-ggsave(plot=alpha_div_plot_simpson, "../figures/simpson_div.pdf", width = 10, height =10 , device='pdf', dpi=500)
+ggsave(plot=alpha_div_plot_shannon, "../figures/shannon_div.jpg", width = 10, height =8, device='jpg', dpi=500)
+ggsave(plot=alpha_div_plot_chao1, "../figures/chao1_div.jpg", width = 10, height =8, device='jpg', dpi=500)
+ggsave(plot=alpha_div_plot_simpson, "../figures/simpson_div.jpg", width = 10, height =8, device='jpg', dpi=500)
 
 
 #beta diversity
