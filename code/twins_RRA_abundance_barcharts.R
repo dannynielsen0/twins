@@ -68,4 +68,21 @@ plot_bar(clostridium) + facet_wrap(~location_staph)
 
 
 
+#get top 50 otus per each location
+
+#subset for each location
+physeq_throat <- subset_samples(physeq1, Location =="Throat")
+physeq_nose <- subset_samples(physeq1, Location =="Nose")
+physeq_hand <- subset_samples(physeq1, Location =="Hand")
+
+#list top 50 of each
+throat_50 <- prune_taxa(names(sort(taxa_sums(physeq_throat), TRUE)) [1:50], physeq_throat)
+nose_50 <- prune_taxa(names(sort(taxa_sums(physeq_nose), TRUE)) [1:50], physeq_nose)
+hand_50 <- prune_taxa(names(sort(taxa_sums(physeq_hand), TRUE)) [1:50], physeq_hand)
+
+write.table(physeq_throat@tax_table, "top50_throat.txt", sep="\t")
+write.table(physeq_nose@tax_table, "top50_nose.txt", sep="\t")
+write.table(physeq_hand@tax_table, "top50_hand.txt", sep="\t")
+
+
 
