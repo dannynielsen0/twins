@@ -70,10 +70,16 @@ plot_bar(clostridium) + facet_wrap(~location_staph)
 
 #get top 50 otus per each location
 
-#subset for each location
+#subset for each location, and glom to genus level
 physeq_throat <- subset_samples(physeq1, Location =="Throat")
+physeq_throat <- tax_glom(physeq_throat, taxrank = "Genus")
+
 physeq_nose <- subset_samples(physeq1, Location =="Nose")
+physeq_nose <- tax_glom(physeq_nose, taxrank = "Genus")
+
 physeq_hand <- subset_samples(physeq1, Location =="Hand")
+physeq_hand <- tax_glom(physeq_hand, taxrank = "Genus")
+
 
 #list top 50 of each
 throat_50 <- prune_taxa(names(sort(taxa_sums(physeq_throat), TRUE)) [1:50], physeq_throat)

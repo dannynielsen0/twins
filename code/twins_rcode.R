@@ -42,7 +42,7 @@ physeq <- readRDS("physeq_twins.rds")
 #number of OTUs in final 16S dataset, and before rarefying
 physeq #1351 total OTUs
 #total number of reads in this dataset
-sum(sample_sums(physeq@otu_table)) #4,680,299
+sum(sample_sums(physeq@otu_table)) #4680299
 
 
 
@@ -77,6 +77,7 @@ summary(sample_sums(physeq_rare)) #using above rarefy command, we have this resu
 
 #save rarefied object
 saveRDS(physeq_rare, "physeq_rare_twins.rds")
+physeq_rare <- readRDS("physeq_rare_twins.rds")
 
 #For alpha diversity plotting, make location_staph variable
 physeq_rare@sam_data$loc_staph <- as.factor(paste(physeq_rare@sam_data$Location, physeq_rare@sam_data$Staph.culture, sep = "_"))
@@ -261,8 +262,23 @@ perm_dist_wunifrac <- phyloseq::distance(physeq_rare, method="wunifrac")
 
 
 #run adonis for PERMANOVA
-bray_perm <- adonis2(perm_dist_bray~Location + Staph.culture, data=perm_meta)
-write.table(bray_perm, "../figures/bray_permanova.txt", sep= "\t")
+bray_perm <- adonis2(perm_dist_bray~Location + Staph.culture + Location*Staph.culture, data=perm_meta)
+write.table(bray_perm, "../figures/bray_permanova_Interaction.txt", sep= "\t")
+
+#check beta dispersion
+bray_location_betadispersion <- betadisper(perm_dist_bray, perm_meta$Location)
+beta_location <- permutest(bray_location_betadispersion) # p=0.001 ***
+write.table(beta_location$tab, "../figures/beta_location.txt", sep= "\t")
+
+bray_staph_betadispersion <- betadisper(perm_dist_bray, perm_meta$Staph.culture)
+beta_staph <- permutest(bray_staph_betadispersion) # p=0.001 ***
+write.table(beta_staph$tab, "../figures/beta_staph.txt", sep= "\t")
+
+
+
+bray_staph_betadispersion <- betadisper(perm_dist_bray, perm_meta$Staph.culture)
+permutest(bray_staph_betadispersion) # p= 0.181 ***
+
 
 unifrac_perm <- adonis2(perm_dist_unifrac~Location + Staph.culture, data=perm_meta)
 write.table(unifrac_perm, "../figures/unifrac_permanova.txt", sep= "\t")
