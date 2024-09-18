@@ -45,7 +45,7 @@ resultsNames(diff_abund)
 
 #set contrast to compare each so that comparing staph against no staph
 res = results(diff_abund, contrast = list(c("Location_Throat_vs_Nose"))) # neg is greater in nose; positive is greater in throat
-sigtab = res[which(res$padj < 0.05), ]
+sigtab = res[which(res$padj < 0.05) , ]
 sigtab = cbind(as(sigtab, "data.frame"), as(tax_table(physeq)[rownames(sigtab), ], "matrix"))
 
 
