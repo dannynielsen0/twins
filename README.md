@@ -19,7 +19,8 @@ y4$Phylum <- factor(y4$Phylum, levels=rev(unique(y4$Phylum)))
 #set color palette to accommodate the number of genera
 
 mycolors <- colorRampPalette(brewer.pal(8, "Paired"))(length(unique(y4$Phylum)))
-
+```
+## Plot using ggplot
 
 #plot
 p <- ggplot(data=y4, aes(x=col2, y=Abundance, fill=Phylum, Phylum =Phylum)) +
@@ -32,6 +33,8 @@ p <- ggplot(data=y4, aes(x=col2, y=Abundance, fill=Phylum, Phylum =Phylum)) +
   theme(strip.text = element_text(size=12, family = "sans")) +
   theme(text=element_text(size=12,family="sans"))
 ```
-## Plot using ggplot
 
 ![Relative read abundance of microbial phyla across sites and between staph postiive and negative samples](https://github.com/dannynielsen0/twins/blob/main/figures/Phylum_RRA.jpg)
+
+
+
